@@ -94,17 +94,18 @@ for i,titulo in enumerate(titulos):
     run.bold = True
     run.font.size = Pt(10)
 
-for list_conteos in list_counts:
-    print(list_codigos)
-    print(list_conteos)
-    for (i,codigos),conteos in zip(enumerate(list_codigos),list_conteos):
+print(list_counts)
+print(list_codigos)
+
+for conteos,codigos in zip(list_counts,list_codigos):
+    for i in range(len(codigos)):
         #print(codigos)
         row = table.add_row().cells
         row[0].text = codigos[i]
-        row[1].text = str(50-conteos[0])
-        row[2].text = str(50-conteos[1])
-        row[3].text = str(50-conteos[2])
-        if sum(conteos) == 0:
+        row[1].text = str(50-conteos[i][0])
+        row[2].text = str(50-conteos[i][1])
+        row[3].text = str(50-conteos[i][2])
+        if sum(conteos[i]) == 0:
             row[4].text = 'CUMPLE'
         else:
             row[4].text = 'NO CUMPLE'
