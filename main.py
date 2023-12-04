@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog
 from PyQt5 import uic
 from PyQt5.QtGui import QPixmap
-import warnings #evita error en consolas
+import warnings
 import sys
 from pedestrian import peatonal
 from vehicle import vehicular

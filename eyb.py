@@ -74,7 +74,7 @@ def times_eyb(ruta):
 
     doc = docx.Document()
     doc.add_heading("REPORTE TIEMPOS DE EMBARQUE Y DESEMBARQUE")
-    table = doc.add_table(rows=1,cols=5,style="Table Grid")
+    table = doc.add_table(rows=1,cols=6,style="Table Grid")
     section = doc.sections[0]
 
     for i in range(3): #El 3 se puede cambiar a antojo, pero creo que esta bien.

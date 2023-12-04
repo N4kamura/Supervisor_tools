@@ -1,5 +1,7 @@
 **/tools
 __pycache__/
-**/sup-env
+**/sup-env/
 dist/
 build/
+requirements.txt
+main.spec

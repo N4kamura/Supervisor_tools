@@ -157,8 +157,13 @@ def vehicular(entregable_path):
             interseccion_critica = round(conteo_mayor_10/muestra,2)
 
             path_formato = "./tools/Formato_Vehicular.xlsx"
-            shutil.copyfile(path_formato,ruta_destino)
-            wb = load_workbook(ruta_destino)
+            current_file, name_excel = os.path.split(ruta_destino)
+            destiny_file = os.path.join(current_file,'Reportes')
+            final_route = os.path.join(destiny_file,name_excel)
+            if not os.path.exists(destiny_file):
+                os.makedirs(destiny_file)
+            shutil.copyfile(path_formato,final_route)
+            wb = load_workbook(final_route)
 
             # Formats #
             porcentaje_style = NamedStyle(name="porcentaje")
@@ -189,7 +194,7 @@ def vehicular(entregable_path):
                             relleno = PatternFill(start_color="FFFF0000", end_color="FFFF0000",fill_type="solid")
                             celda.fill = relleno
 
-            wb.save(ruta_destino)
+            wb.save(final_route)
 
             _, nombre_archivo = os.path.split(ruta_destino)
             patron = r"^([A-Z]+-[0-9]+)"
@@ -234,7 +239,7 @@ def vehicular(entregable_path):
 
     titulos = ['ID', 'Fecha Muestra', 'Esc.', 'Hora Muestra', 'Muestra', 
                 '<10%', '>10%', 'E.R.\n%(máx)', 'E.R.\n%(mín)', 
-                'E.R.\nProm', '>10/mues.']
+                'E.R.\nProm', '>10/mues.\n(%)']
 
     for i, titulo in enumerate(titulos):
         celda = table.rows[0].cells[i]
@@ -250,9 +255,9 @@ def vehicular(entregable_path):
         for dt in data:
             row = table.add_row().cells
             row[0].text = dt[0] #Intersección
-            row[1].text = dt[1] #Fecha, tiene que entrar com str
+            row[1].text = dt[1] #Fecha
             row[2].text = dt[2] #Escenario
-            row[3].text = dt[3] #Hora, tiene que entrar com str
+            row[3].text = dt[3] #Hora
             row[4].text = str(int(dt[4])) #Muestra
             row[5].text = str(int(dt[5])) #<10
             row[6].text = str(int(dt[6])) #>10
@@ -270,8 +275,7 @@ def vehicular(entregable_path):
                         run.font.size = Pt(10)
 
     try:
-        _, nombre_del_archivo = os.path.split(entregable_path) # <--------- ACA VA UN INPUT DE LA FUNCION
-        direccion_archivo = os.path.join(ruta_vehicular,f"INFORME_GENERAL_VEHICULAR {nombre_del_archivo}.docx")
+        direccion_archivo = os.path.join(ruta_vehicular,f"INFORME_GENERAL_VEHICULAR.docx")
         doc.save(direccion_archivo)
         print("¡Informe general guardado con éxito!")
     except IndexError:

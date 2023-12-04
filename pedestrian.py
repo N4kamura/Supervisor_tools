@@ -19,9 +19,9 @@ def peatonal(entregable_path):
 
     ruta_N2 = os.path.join(ruta,"7.- Informacion de Campo","Peatonal") #SE CAMBIA
     files = ["Atipico",
-                "Atipico (Protransito)",
-                "Tipico",
-                "Tipico (Protransito)",]
+            "Atipico (Protransito)",
+            "Tipico",
+            "Tipico (Protransito)",]
     
     #print(f"Lista de carpetas:{files}") # los cuales se van analizar
     #slice("L3","AZ3")
@@ -164,9 +164,14 @@ def peatonal(entregable_path):
             interseccion_critica = round(conteo_mayor_10/muestra,2)
             
             path_formato = "./tools/Formato_Peatonal.xlsx"
-            shutil.copyfile(path_formato,ruta_destino) #copia el contenido del archivo path formato a otro archivo ubicado en la ruta_destino
+            current_file, name_excel = os.path.split(ruta_destino)
+            destiny_file = os.path.join(current_file,'Reportes')
+            final_route = os.path.join(destiny_file,name_excel)
+            if not os.path.exists(destiny_file):
+                os.makedirs(destiny_file)
+            shutil.copyfile(path_formato,final_route) #copia el contenido del archivo path formato a otro archivo ubicado en la ruta_destino
 
-            wb = load_workbook(ruta_destino) # es la ruta del archivo
+            wb = load_workbook(final_route) # es la ruta del archivo
             ws = wb["Data Peatonal"]
 
             #Definición de formatos:
@@ -199,7 +204,7 @@ def peatonal(entregable_path):
                             relleno = PatternFill(start_color="FFFF0000", end_color="FFFF0000",fill_type="solid")
                             celda.fill = relleno
             #establece patrones
-            wb.save(ruta_destino)
+            wb.save(final_route)
             _,nombre_archivo = os.path.split(ruta_destino)
             patron = r"^([A-Z]+[0-9]+)_" 
             coincidencia = re.search(patron,nombre_archivo)

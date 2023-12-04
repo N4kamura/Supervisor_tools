@@ -77,7 +77,10 @@ def gradient_analysis(ruta):
 
             path_formato = "./tools/Formato_Vehicular.xlsx"
             final_path, name_excel = os.path.split(ruta_excel)
-            final_route = os.path.join(final_path,name_excel[:-5]+"_GRAD.xlsx")
+            new_directory = os.path.join(final_path+' (Protransito)','Gradiente')
+            if not os.path.exists(new_directory):
+                os.makedirs(new_directory)
+            final_route = os.path.join(new_directory,name_excel[:-5]+"_GRAD.xlsx")
             shutil.copyfile(path_formato,final_route)
 
             wb = load_workbook(final_route)
