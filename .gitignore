@@ -1,2 +1,5 @@
 **/tools
-**/__pycache__
+__pycache__/
+**/sup-env
+dist/
+build/
