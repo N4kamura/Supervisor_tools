@@ -7,6 +7,7 @@ from pedestrian import peatonal
 from vehicle import vehicular
 from gradient import gradient_analysis
 from tiles import tile_report
+from eyb import times_eyb
 
 warnings.filterwarnings("ignore",category=DeprecationWarning)
 
@@ -45,7 +46,8 @@ class UI(QMainWindow):
         self.label_7.setText("Finalizado")
 
     def start_EyB(self):
-        self.label_8.setText("Working")
+        times_eyb(self.entregable_path)
+        self.label_8.setText("Finalizado")
 
 def main():
     app = QApplication(sys.argv)

@@ -77,7 +77,7 @@ def tile_report(ruta):
 
     doc = docx.Document()
     doc.add_heading("REPORTE LONGITUD DE COLA")
-    table = doc.add_table(rows=1,cols=5,style="Table Grid")
+    table = doc.add_table(rows=1,cols=6,style="Table Grid")
     section = doc.sections[0]
 
     for i in range(3):
@@ -85,6 +85,7 @@ def tile_report(ruta):
             cell.width = Inches(1)
 
     titulos = ['Código',
+            'Tipicidad',
             'Turno Mañana',
             'Turno Medio Día',
             'Turno Noche',
@@ -98,18 +99,22 @@ def tile_report(ruta):
         run.bold = True
         run.font.size = Pt(10)
     
-    #Chequear si bajar codigo_excel al siguiente for.
-    for codigo_excel,conteo_excel in zip(list_codigos,list_conteos):
-        for index,conteo in enumerate(conteo_excel):
+    for (index,codigo_excel),conteos in zip(enumerate(list_codigos),list_conteos):
+        if index == 0:
+            tipicidad = 'Tipico'
+        else:
+            tipicidad = 'Atipico'
+        for i in range(len(codigo_excel)):
             row = table.add_row().cells
-            row[0].text = codigo_excel[index]
-            row[1].text = str(conteo[0])
-            row[2].text = str(conteo[1])
-            row[3].text = str(conteo[2])
-            if sum(conteo) == 90:
-                row[4].text = 'CUMPLE'
+            row[0].text = codigo_excel[i]
+            row[1].text = tipicidad
+            row[2].text = str(conteos[i][0])
+            row[3].text = str(conteos[i][1])
+            row[4].text = str(conteos[i][2])
+            if sum(conteos[i]) == 90:
+                row[5].text = 'CUMPLE'
             else:
-                row[4].text = 'NO CUMPLE'
+                row[5].text = 'NO CUMPLE'
 
     for row in table.rows:
         for cell in row.cells:
