@@ -206,7 +206,7 @@ def peatonal(entregable_path):
             #establece patrones
             wb.save(final_route)
             _,nombre_archivo = os.path.split(ruta_destino)
-            patron = r"^([A-Z]+[0-9]+)_" 
+            patron = r"([A-Z]+-[0-9]+)" 
             coincidencia = re.search(patron,nombre_archivo)
 
             if coincidencia:
