@@ -62,10 +62,11 @@ def tile_report(ruta):
                 conteos.append(contador) #(30,30,30)
             conteo_excel.append(conteos)
             _,name_excel = os.path.split(excel_path)
-            patron = r"^([A-Z]+-[0-9]+)"
+            patron = r"^[0-9]+_([A-Z]+[0-9]+)"
             coincidencia = re.search(patron,name_excel)
             if coincidencia:
                 codigo = coincidencia.group(1)
+                codigo = codigo[:2]+'-'+codigo[2:]
             codigo_excel.append(codigo)
 
         list_conteos.append(conteo_excel)
@@ -111,8 +112,14 @@ def tile_report(ruta):
             row[2].text = str(conteos[i][0])
             row[3].text = str(conteos[i][1])
             row[4].text = str(conteos[i][2])
-            if sum(conteos[i]) == 90:
-                row[5].text = 'CUMPLE'
+            if conteos[i][0]>=30:
+                if conteos[i][1]>=30:
+                    if conteos[i][2]>=30:
+                        row[5].text = 'CUMPLE'
+                    else:
+                        row[5].text = 'NO CUMPLE'
+                else:
+                    row[5].text = 'NO CUMPLE'
             else:
                 row[5].text = 'NO CUMPLE'
 

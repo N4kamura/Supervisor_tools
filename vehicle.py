@@ -55,10 +55,10 @@ def vehicular(entregable_path):
     for veh3 in listas[3]: #Supervisor
         for veh1 in listas[1]: #Consultor
             nombre_veh3 = os.path.basename(veh3)
-            nombre_veh1 = os.path.basename(veh0)
+            nombre_veh1 = os.path.basename(veh1)
 
             if nombre_veh3 != nombre_veh1 and nombre_veh3.replace("_REV","") == nombre_veh1:
-                archivos[1].append(veh3,veh1)
+                archivos[1].append((veh3,veh1))
 
     data_row = [[] for _ in range(2)]
 
@@ -116,14 +116,17 @@ def vehicular(entregable_path):
                     lista_ultimos_valores.append(indices[-1])
 
             if lista_primeros_valores and lista_ultimos_valores:
-                lower_index = max(lista_ultimos_valores)
-                upper_index = min(lista_primeros_valores)
-
-            upper_hour = ((upper_index)*15)//60
-            lower_hour = ((lower_index+1)*15)//60
-            
-            upper_min = ((upper_index)*15)%60
-            lower_min = ((lower_index+1)*15)%60
+                    lower_index = max(lista_ultimos_valores)
+                    upper_index = min(lista_primeros_valores)
+            try:
+                upper_hour = ((upper_index)*15)//60
+                lower_hour = ((lower_index+1)*15)//60
+                
+                upper_min = ((upper_index)*15)%60
+                lower_min = ((lower_index+1)*15)%60
+            except UnboundLocalError:
+                _,error_excel = os.path.split(pair[0])
+                return print(f"El excel de revisión no posee información. ¡Revisar:\nArchivo: {error_excel}")
 
             sample_hour = f"{upper_hour:02d}:{upper_min:02d} - {lower_hour:02d}:{lower_min:02d}"
 

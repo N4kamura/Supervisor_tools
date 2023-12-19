@@ -86,8 +86,10 @@ def gradient_analysis(ruta):
             wb = load_workbook(final_route)
             for index,hoja in enumerate(hojas):
                 ws = wb[hoja]
-
+                columns_to_hide = []
                 for i,col in enumerate(list_columnas[index]):
+                    if sum(col)==0:
+                        columns_to_hide.append(11+i)
                     for j in range(96):
                         if j>=0:
                             celda = ws.cell(row=16+j,column=11+i)
@@ -101,10 +103,16 @@ def gradient_analysis(ruta):
                                         celda.fill = relleno
                                     else:
                                         pass
+                                if 24<=j<=37 or 48<=j<=59 or 70<=j<=81:
+                                    if col[j]==0:
+                                        celda.fill = PatternFill("solid", fgColor="FFFF00")
 
                 for row in ws['K15:HB15']:
                     for i, elem in enumerate(row):
                         elem.value = giros[index][i]
+
+                for col in columns_to_hide:
+                    ws.column_dimensions[ws.cell(row=1,column=col).column_letter].hidden = True
 
             wb.save(final_route)
             wb.close()
