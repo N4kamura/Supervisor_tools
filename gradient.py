@@ -103,7 +103,7 @@ def gradient_analysis(ruta):
                                         celda.fill = relleno
                                     else:
                                         pass
-                                if 24<=j<=37 or 48<=j<=59 or 70<=j<=81:
+                                if 26<=j<=37 or 48<=j<=59 or 70<=j<=81:
                                     if col[j]==0:
                                         celda.fill = PatternFill("solid", fgColor="FFFF00")
 

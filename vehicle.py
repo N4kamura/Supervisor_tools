@@ -4,12 +4,19 @@ from reading import read_excel_vehicular
 import numpy as np
 import shutil
 from openpyxl import load_workbook
-from openpyxl.styles import PatternFill, NamedStyle, Border, Side
+from openpyxl.styles import NamedStyle, Border, Side
 import re
 import docx
-from  docx.shared import Pt, Inches
+from  docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+import math
 
+def _put_format(table,row,col): #Just bold
+    paragraph = table.cell(row,col).paragraphs[0]
+    run = paragraph.runs[0]
+    run.bold = True
+def _join_cells(table,row1,col1,row2,col2):
+    table.rows[row1].cells[col1].merge(table.rows[row2].cells[col2])
 def vehicular(entregable_path):
 
     hojas = ["N","S","E","O"]
@@ -79,8 +86,28 @@ def vehicular(entregable_path):
                 print(f"Comparando Tipicos ({l+1}/{len(archivo)})")
             else:
                 print(f"Comparando Atipicos ({l+1}/{len(archivo)})")
-            data_consultor,fecha,giros = read_excel_vehicular(pair[1])
-            data_supervisor,_,_ = read_excel_vehicular(pair[0])
+
+            data_consultor,fecha,giros,_ = read_excel_vehicular(pair[1],False)
+            data_supervisor,_,giros_compare,quarter_hour = read_excel_vehicular(pair[0],True)
+            giros_cons = []
+            for giro in giros:
+                AUX = [elem for elem in giro if isinstance(elem,int)]
+                giros_cons.append(AUX)
+
+            giros_sup = []
+            for giro in giros_compare:
+                AUX = [elem for elem in giro if isinstance(elem,int)]
+                giros_sup.append(AUX)
+
+            stop = 0
+            for (i,giro_cons), giro_sup in zip(enumerate(giros_cons), giros_sup):
+                if giro_cons == giro_sup:
+                    pass
+                else:
+                    stop += 1
+            check = True #Read
+            if stop != 0:
+                check = False #Not read
 
             ruta_destino = pair[0].replace("_REV.xlsm","_REP.xlsx")
 
@@ -89,75 +116,17 @@ def vehicular(entregable_path):
 
             resultados = []
 
-            volumen_supervisor = 0
-            volumen_consultor = 0
-
             # Reading Info #
-
-            lista_primeros_valores = []
-            lista_ultimos_valores = []
+            A = []
 
             for data_con, data_sup in zip(data_consultor, data_supervisor):
                 mascara = data_sup != 0
                 resultado = np.zeros_like(data_con)
-                
-                volumen_supervisor += np.sum(data_sup[mascara])
-                volumen_consultor += np.sum(data_con[mascara])
-
-                resultado[mascara] = np.abs((data_con[mascara]-data_sup[mascara])) / data_sup[mascara]
+                resultado[mascara] = (data_con[mascara]-data_sup[mascara])
                 resultados.append(resultado)
 
-                #Searching upper and lower limits
-                filled_rows = np.any(mascara,axis=1)
-                indices = np.where(filled_rows)[0]
-
-                if indices.size > 0:
-                    lista_primeros_valores.append(indices[0])
-                    lista_ultimos_valores.append(indices[-1])
-
-            if lista_primeros_valores and lista_ultimos_valores:
-                    lower_index = max(lista_ultimos_valores)
-                    upper_index = min(lista_primeros_valores)
-            try:
-                upper_hour = ((upper_index)*15)//60
-                lower_hour = ((lower_index+1)*15)//60
-                
-                upper_min = ((upper_index)*15)%60
-                lower_min = ((lower_index+1)*15)%60
-            except UnboundLocalError:
-                _,error_excel = os.path.split(pair[0])
-                return print(f"El excel de revisión no posee información. ¡Revisar:\nArchivo: {error_excel}")
-
-            sample_hour = f"{upper_hour:02d}:{upper_min:02d} - {lower_hour:02d}:{lower_min:02d}"
-
-            ###################
-            # Getting Indexes #
-            ###################
-
-            suma_total = 0
-            num_valores = 0
-            conteo_mayor_10 = 0
-            conteo_menor_10 = 0
-            error_minimo = 1
-            error_maximo = 0
-
-            for result in resultados:
-                mascara = result != 0
-                suma_total += np.sum(result[mascara])
-
-                num_valores += np.count_nonzero(mascara)
-                conteo_mayor_10 += np.count_nonzero(result[mascara] > 0.1)
-                conteo_menor_10 += np.count_nonzero(result[mascara] <= 0.1)
-
-                if result[mascara].size > 0:
-                    error_maximo_actual = np.max(result[mascara])
-                    error_minimo_actual = np.min(result[mascara])
-                    error_maximo = max(error_maximo,error_maximo_actual)
-                    error_minimo = min(error_minimo, error_minimo_actual)
-
-            promedio = round(suma_total / num_valores, 2)
-            muestra = conteo_mayor_10 + conteo_menor_10
-            interseccion_critica = round(conteo_mayor_10/muestra,2)
+                #Variable para la creación de la tabla de frecuencias
+                A.extend(np.abs(resultado[mascara]).tolist())
 
             path_formato = "./tools/Formato_Vehicular.xlsx"
             current_file, name_excel = os.path.split(ruta_destino)
@@ -170,7 +139,7 @@ def vehicular(entregable_path):
 
             # Formats #
             porcentaje_style = NamedStyle(name="porcentaje")
-            porcentaje_style.number_format = '0%'
+            #porcentaje_style.number_format = '0%'
             porcentaje_style.border = Border(left=Side(style='thin'),
                                             right=Side(style='thin'),
                                             top=Side(style='thin'),
@@ -193,10 +162,6 @@ def vehicular(entregable_path):
 
                         celda.style = porcentaje_style
 
-                        if valor >= 0.1: #Error Relativo: 10%
-                            relleno = PatternFill(start_color="FFFF0000", end_color="FFFF0000",fill_type="solid")
-                            celda.fill = relleno
-
             wb.save(final_route)
 
             _, nombre_archivo = os.path.split(ruta_destino)
@@ -209,11 +174,7 @@ def vehicular(entregable_path):
                 print(f"El archivo de excel no posee Código de intersección:\n{nombre_archivo}")
                 codigo = "ERROR"
 
-            data_row[index].append((codigo,fecha[:-9],tipicidad,
-                                    sample_hour,muestra,
-                                    conteo_menor_10,conteo_mayor_10,
-                                    error_maximo,error_minimo,
-                                    promedio,interseccion_critica))
+            data_row[index].append((codigo,fecha[:-9],tipicidad,A,quarter_hour,check))
             
     fin_lectura = time.perf_counter()
     duracion_lectura = fin_lectura - inicio_lectura
@@ -227,55 +188,95 @@ def vehicular(entregable_path):
 
     doc = docx.Document()
     doc.add_heading(f"REPORTE FLUJO VEHICULAR")
-    table = doc.add_table(rows=1,cols=11,style="Table Grid")
-    section = doc.sections[0]
-    section.top_margin = Inches(0.5)
-    section.bottom_margin = Inches(0.5)
-    section.left_margin = Inches(0.5)
-    section.right_margin = Inches(0.5)
-
-    for cell in table.columns[1].cells:
-        cell.width = Inches(2)
-
-    for cell in table.columns[3].cells:
-        cell.width = Inches(2)
-
-    titulos = ['ID', 'Fecha Muestra', 'Esc.', 'Hora Muestra', 'Muestra', 
-                '<10%', '>10%', 'E.R.\n%(máx)', 'E.R.\n%(mín)', 
-                'E.R.\nProm', '>10/mues.\n(%)']
-
-    for i, titulo in enumerate(titulos):
-        celda = table.rows[0].cells[i]
-        parrafo = celda.paragraphs[0]
-        run = parrafo.add_run(titulo)
-        run.bold = True
-        run.font.size = Pt(10)
+    titulos = ['Clase','Frecuencia','Frecuencia Relativa','Frecuencia Acumulada']
 
     for i, data in enumerate(data_row):
         if len(data) == 0:
-            pass
-        
-        for dt in data:
-            row = table.add_row().cells
-            row[0].text = dt[0] #Intersección
-            row[1].text = dt[1] #Fecha
-            row[2].text = dt[2] #Escenario
-            row[3].text = dt[3] #Hora
-            row[4].text = str(int(dt[4])) #Muestra
-            row[5].text = str(int(dt[5])) #<10
-            row[6].text = str(int(dt[6])) #>10
-            row[7].text = str(int(dt[7]*100)) #ER MAX
-            row[8].text = str(int(dt[8]*100)) #ER MIN
-            row[9].text = str(int(dt[9]*100)) #ER PROMEDIO
-            row[10].text = str(int(dt[10]*100)) #PORCENTAJE <10
+            continue
 
-        for row in table.rows:
-            for cell in row.cells:
-                cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-                cell.vertical_alignment = WD_ALIGN_PARAGRAPH.CENTER
-                for paragraph in cell.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.size = Pt(10)
+        for dt in data:
+            if dt[5]==False:
+                paragraph = doc.add_paragraph()
+                run = paragraph.add_run("Los giros de Protránsito no coinciden con los giros de EDSA.")
+                continue
+            
+            CODIGO = dt[0]
+            FECHA = dt[1]
+            TIPICIDAD = dt[2]
+            LISTA = dt[3]
+            HORA = dt[4]
+
+            #Tratamiento de la lista completa
+            num_datos = len(LISTA)
+            num_clases = int(1+3.322*(num_datos**(1/3)))
+            rango = max(LISTA) - min(LISTA)
+            tamaño_clase = rango / num_clases
+            tamaño_clase_entero = math.ceil(tamaño_clase)
+
+            limite_inferior = min(LISTA)
+            clases = []
+            for _ in range(num_clases):
+                limite_superior = limite_inferior + tamaño_clase_entero
+                clases.append((limite_inferior,limite_superior))
+                limite_inferior = limite_superior
+
+            frecuencias = [0]*num_clases
+            for dato in LISTA:
+                for j, clase in enumerate(clases):
+                    if clase[0] <= dato < clase[1]:
+                        frecuencias[j] += 1
+                        break
+
+            frec_relativa = [f / num_datos for f in frecuencias]
+            frec_acumulada = [sum(frec_relativa[:i+1]) for i in range(num_clases)]
+
+            table = doc.add_table(rows=1,cols=4,style="Table Grid")
+            table.cell(0,0).text = 'Código'
+            table.cell(0,1).text = 'Fecha'
+            table.cell(0,2).text = 'Tipicidad'
+            table.cell(0,3).text = 'Hora'
+
+            for j in range(4):
+                _put_format(table,0,j)
+
+            #_join_cells(table,0,2,0,3)
+
+            row = table.add_row().cells
+            row[0].text = CODIGO
+            row[1].text = str(FECHA)
+            row[2].text = str(TIPICIDAD)
+            horas_inicio = HORA//4
+            minutos_inicio = int(((HORA/4-HORA//4))*60)
+            horas_fin = (HORA+1)//4
+            minutos_fin = int((((HORA+1)/4-(HORA+1)//4))*60)
+            row[3].text = f"{horas_inicio:02}:{minutos_inicio:02} - {horas_fin:02}:{minutos_fin:02}"
+            #_join_cells(table,1,2,1,3)
+
+            row = table.add_row().cells
+            for i, titulo in enumerate(titulos):
+                row[i].text = titulo
+
+            for clase,frecuencia,relativa,acumulada in zip(clases,frecuencias,frec_relativa,frec_acumulada):
+                row = table.add_row().cells
+                row[0].text = str(f"{int(clase[0])} - {int(clase[1])}")
+                row[1].text = str(frecuencia)
+                row[2].text = str(int(relativa*100))+'%'
+                row[3].text = str(int(acumulada*100))+'%'
+
+            for row in table.rows:
+                for cell in row.cells:
+                    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    cell.vertical_alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(10)
+            _put_format(table,2,0)
+            _put_format(table,2,1)
+            _put_format(table,2,2)
+            _put_format(table,2,3)
+            
+            paragraph = doc.add_paragraph()
+            paragraph.add_run().add_break()
 
     try:
         direccion_archivo = os.path.join(ruta_vehicular,f"INFORME_GENERAL_VEHICULAR.docx")

@@ -3,5 +3,4 @@ __pycache__/
 **/sup-env/
 dist/
 build/
-requirements.txt
 main.spec
