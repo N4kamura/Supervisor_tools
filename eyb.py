@@ -59,7 +59,7 @@ def times_eyb(ruta):
                 periods_counts.append(count_none) #Un elemento periods_counts contiene los conteos de un excel
 
             _, name_excel = os.path.split(excel_path)
-            patron = r"^[0-9]+_([A-Z]+[0-9]+)"
+            patron = r"^[0-9]+_([A-Z]+-[0-9]+)"
             coincidencia = re.search(patron,name_excel)
             if coincidencia:
                 codigo = coincidencia.group(1)

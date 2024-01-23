@@ -48,7 +48,6 @@ def tile_report(ruta):
         else:
             print("********** Revisando Longitudes de Cola Atipicos **********")
         for index2,excel_path in enumerate(lista):
-            print(f"Revisando excel ({index2+1}/{len(lista)})")
             wb = load_workbook(excel_path,read_only=True,data_only=True)
             ws = wb['Base Data']
         
@@ -62,7 +61,7 @@ def tile_report(ruta):
                 conteos.append(contador) #(30,30,30)
             conteo_excel.append(conteos)
             _,name_excel = os.path.split(excel_path)
-            patron = r"^[0-9]+_([A-Z]+[0-9]+)"
+            patron = r"^[0-9]+_([A-Z]+-[0-9]+)"
             coincidencia = re.search(patron,name_excel)
             if coincidencia:
                 codigo = coincidencia.group(1)
