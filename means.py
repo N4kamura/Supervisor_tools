@@ -48,7 +48,7 @@ def read_excel(excel_path
     #Reading data from sheets
     CAR_LIST = []
     MOTO_LIST = []
-    delete_range = [(0,26),(39,48),(61,64),(83,97)]
+
     for hoja, num in zip(hojas,quantities):
         ws = wb[hoja]
 
@@ -58,6 +58,9 @@ def read_excel(excel_path
         except ValueError:
             LOGGER.critical(f"Para autos en la hoja '{hoja}' hay datos que no son números")
         CAR = np.nan_to_num(CAR, nan=0.0)
+        CAR_MORNING = CAR[26:38,:]
+        CAR_EVENING = CAR[48:60,:]
+        CAR_NIGHT = CAR[70:82,:]
 
         moto_data = [[elem.value for elem in row][:num] for row in ws[moto_slice]]
         try:
@@ -65,29 +68,32 @@ def read_excel(excel_path
         except ValueError:
             LOGGER.critical(f"Para motos en la hoja '{hoja}' hay datos que no son números")
         MOTO = np.nan_to_num(MOTO, nan=0.0)
+        MOTO_MORNING = MOTO[27:39,:]
+        MOTO_EVENING = MOTO[49:61,:]
+        MOTO_NIGHT = MOTO[71:83,:]
 
-        #Deleting zero rows
-        no_zeros = np.all(CAR !=0, axis=1)
-        car = CAR[no_zeros]
-        moto = MOTO[no_zeros]
-        CAR_LIST.append(car)
-        MOTO_LIST.append(moto)
+        CAR_LIST.append([CAR_MORNING,CAR_EVENING,CAR_NIGHT]) #POR HOJA
+        MOTO_LIST.append([MOTO_MORNING,MOTO_EVENING,MOTO_NIGHT]) #POR HOJA
 
     wb.close()
 
-    return CAR_LIST, MOTO_LIST, quantities
+    return CAR_LIST, MOTO_LIST
 
 def find_duplicate(CARS, length) -> None:
     count = 0
     repes_list = []
-    for orden, CAR in enumerate(CARS):
-        if len(CAR) == 97: #Array vacío pero con 97 filas debido a supresión.
-            continue
-        for i in range(len(CAR)-length+1):
-            set = CAR[i:i+length,0]
-            for j in range(i+1, len(CAR) - length + 1):
-                if np.array_equal(CAR[j:j+length, 0], set):
-                    #print(f"Conjunto repetido: {set} en hoja Nro. {orden}")
+    CAR = np.concatenate((CARS[0],CARS[1]))
+    CAR = np.concatenate((CAR,CARS[2]))
+
+    for k in range(CAR.shape[1]):
+        GIRO = CAR[:,k]
+        for i in range(len(GIRO)-length+1):
+            set = GIRO[i:i+length]
+            if np.array_equal(set, np.zeros(length)):
+                continue
+            for j in range(i+1, len(GIRO) - length + 1):
+                if np.array_equal(GIRO[j:j+length], set):
+                    print(f"Conjunto repetido: {set} en hoja Nro. {k}")
                     repes_list.append(set)
                     count += 1
 
@@ -110,10 +116,18 @@ def main():
     fh.setFormatter(f)
     LOGGER.addHandler(fh)
 
-    CARS, MOTOS, LIMITS = read_excel(excel_path)
+    CARS_LIST, MOTOS_LIST = read_excel(excel_path)
+    repes_count = 0
+    repes_list = []
+    for CARS in CARS_LIST: #CARS = Arreglo por sentido.
+        car_result, car_reps = find_duplicate(CARS,2)
+        repes_count += car_result
+        repes_list.append(car_reps)
 
-    car_result, car_reps = find_duplicate(CARS,2)
-    moto_result, moto_reps = find_duplicate(MOTOS,2)
+    print(f"Número de repeticiones = {repes_count}")
+    print(f"Repeticiones = {repes_list}")
+
+    #moto_result, moto_reps = find_duplicate(MOTOS_LIST,2)
 
 if __name__ == '__main__':
     main()
