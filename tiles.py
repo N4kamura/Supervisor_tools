@@ -62,7 +62,7 @@ def tile_report(ruta):
                 conteos.append(contador) #(30,30,30)
             conteo_excel.append(conteos)
             _,name_excel = os.path.split(excel_path)
-            patron = r"^[0-9]+_([A-Z]+[0-9]+)"
+            patron = r"([A-Z]+-[0-9]+)"
             coincidencia = re.search(patron,name_excel)
             if coincidencia:
                 codigo = coincidencia.group(1)
