@@ -79,8 +79,7 @@ def read_excel_vehicular(excel_path
 
     return CAR_LIST, MOTO_LIST
 
-def read_excel_pedestrian(excel_path
-               ) -> type(np.array) and type(np.array) and list:
+def read_excel_pedestrian(excel_path):
     """Función que obtiene los conteos por giros de vehículos y motocicletas para todos los sentidos.
     """
     
@@ -115,6 +114,7 @@ def read_excel_pedestrian(excel_path
     #Reading data from sheets
     CAR_LIST = []
     MOTO_LIST = []
+    ws = wb['Data Peatonal']
     list_A = [[cell.value for cell in row] for row in ws[matrix_slice]]
 
     for i, row in enumerate(list_A):
@@ -132,8 +132,8 @@ def read_excel_pedestrian(excel_path
         MORNING.append(
             np.array(
                 [
-                    A[2:13, (10*ped_type):(10*ped_type+num_giro_i[i_giro])] #El i_giro esta mal enfocado
-                    for ped_type in range(16)
+                    A[2:13, (140*i_giro+10*ped_type):(140*i_giro+10*ped_type+num_giro_i[i_giro])] #El i_giro esta mal enfocado
+                    for ped_type in range(4)
                 ]
             )
         )
@@ -197,7 +197,7 @@ def jump_multiple():
     pass
 
 def main():
-    directory = r"C:\Users\dacan\OneDrive\Desktop\PRUEBAS\Supervisor\Entregable Nro 05\7.- Informacion de Campo\Vehicular\Atipico"
+    directory = r"C:\MML\Entregables\QUINTO ENTREGABLE\6. Quinto Entregable\Trabajos Campo\Conteos E-5\Peatonales E-5"
 
     logger_path = os.path.join(directory,"LOGS")
     if not os.path.exists(logger_path):
@@ -207,33 +207,41 @@ def main():
     LOGGER.addHandler(fh)
     excels = os.listdir(directory)
     excels = [excel for excel in excels if excel.endswith('.xlsm') and '~$' not in excel]
-    new_excel = os.path.join(directory,"Pattern_Summary.xlsx")
-    if not os.path.exists(new_excel):
-        wb = Workbook()
-        wb.save(new_excel)
-        wb.close()
 
-    wb = load_workbook(new_excel)
-    ws = wb['Sheet']
+    excels = excels[0]
 
-    #Encabezados:
-    ws.cell(row=1, column=1, value="Patrón")
-    ws.cell(row=1, column=2, value="Hoja")
-    ws.cell(row=1, column=3, value="Excel")
+    print(f'Archivo: {excels}')
 
-    acumm_count = 0
-    for excel in excels:
-        print(f"Reading: {excel}")
-        CARS_LIST, MOTOS_LIST = read_excel_vehicular(os.path.join(directory, excel))
-        for sheet, CARS in enumerate(CARS_LIST): #CARS = Arreglo por sentido.
-            current_count = find_duplicate(CARS,4,ws,acumm_count, sheet,excel)
-            acumm_count = current_count
-        for sheet, MOTOS in enumerate(MOTOS_LIST):
-            current_count = find_duplicate(MOTOS,4,ws,acumm_count,sheet,excel)
-            acumm_count = current_count
+    MORNING, EVENING, NIGHT = read_excel_pedestrian(os.path.join(directory,excels))
+    print(MORNING)
 
-    wb.save(new_excel)
-    wb.close()
+    # new_excel = os.path.join(directory,"Pattern_Summary.xlsx")
+    # if not os.path.exists(new_excel):
+    #     wb = Workbook()
+    #     wb.save(new_excel)
+    #     wb.close()
+
+    # wb = load_workbook(new_excel)
+    # ws = wb['Sheet']
+
+    # #Encabezados:
+    # ws.cell(row=1, column=1, value="Patrón")
+    # ws.cell(row=1, column=2, value="Hoja")
+    # ws.cell(row=1, column=3, value="Excel")
+
+    # acumm_count = 0
+    # for excel in excels:
+    #     print(f"Reading: {excel}")
+    #     CARS_LIST, MOTOS_LIST = read_excel_vehicular(os.path.join(directory, excel))
+    #     for sheet, CARS in enumerate(CARS_LIST): #CARS = Arreglo por sentido.
+    #         current_count = find_duplicate(CARS,4,ws,acumm_count, sheet,excel)
+    #         acumm_count = current_count
+    #     for sheet, MOTOS in enumerate(MOTOS_LIST):
+    #         current_count = find_duplicate(MOTOS,4,ws,acumm_count,sheet,excel)
+    #         acumm_count = current_count
+
+    # wb.save(new_excel)
+    # wb.close()
 
 if __name__ == '__main__':
     main()
