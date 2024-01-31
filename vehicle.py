@@ -128,7 +128,7 @@ def vehicular(entregable_path):
                 #Variable para la creación de la tabla de frecuencias
                 A.extend(np.abs(resultado[mascara]).tolist())
 
-            path_formato = "./tools/Formato_Vehicular.xlsx"
+            path_formato = "./images/Formato_Vehicular.xlsx"
             current_file, name_excel = os.path.split(ruta_destino)
             destiny_file = os.path.join(current_file,'Reportes')
             final_route = os.path.join(destiny_file,name_excel)

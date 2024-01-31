@@ -163,7 +163,7 @@ def peatonal(entregable_path):
             muestra = conteo_mayor_10+conteo_menor_10
             interseccion_critica = round(conteo_mayor_10/muestra,2)
             
-            path_formato = "./tools/Formato_Peatonal.xlsx"
+            path_formato = "./images/Formato_Peatonal.xlsx"
             current_file, name_excel = os.path.split(ruta_destino)
             destiny_file = os.path.join(current_file,'Reportes')
             final_route = os.path.join(destiny_file,name_excel)
