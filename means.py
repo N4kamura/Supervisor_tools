@@ -197,7 +197,7 @@ def jump_multiple():
     pass
 
 def main():
-    directory = r"C:\Users\dacan\OneDrive\Desktop\PRUEBAS\Supervisor\Entregable Nro 05\7.- Informacion de Campo\Vehicular\Atipico"
+    directory = r"C:\Users\dacan\OneDrive\Desktop\PRUEBAS\Supervisor\Entregable Nro 06\7.- Informacion de Campo\Vehicular\Raw_Data"
 
     logger_path = os.path.join(directory,"LOGS")
     if not os.path.exists(logger_path):
@@ -222,8 +222,8 @@ def main():
     ws.cell(row=1, column=3, value="Excel")
 
     acumm_count = 0
-    for excel in excels:
-        print(f"Reading: {excel}")
+    for count, excel in enumerate(excels):
+        print(f"{count+1}/{len(excels)} Reading: {excel}")
         CARS_LIST, MOTOS_LIST = read_excel_vehicular(os.path.join(directory, excel))
         for sheet, CARS in enumerate(CARS_LIST): #CARS = Arreglo por sentido.
             current_count = find_duplicate(CARS,4,ws,acumm_count, sheet,excel)

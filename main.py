@@ -8,14 +8,15 @@ from vehicle import vehicular
 from gradient import gradient_analysis
 from tiles import tile_report
 from eyb import times_eyb
+from order import order_files
 
 warnings.filterwarnings("ignore",category=DeprecationWarning)
 
 class UI(QMainWindow):
     def __init__(self):
         super().__init__() #herencia
-        uic.loadUi("./tools/supervisor.ui",self) #traer la interfaz creada
-        logo = QPixmap("./tools/logo.jpg")
+        uic.loadUi("./images/supervisor.ui",self) #traer la interfaz creada
+        logo = QPixmap("./images/logo.jpg")
         self.label.setPixmap(logo)
         self.pushButton.clicked.connect(self.open_file)
         self.b_veh.clicked.connect(self.start_veh)
@@ -23,6 +24,7 @@ class UI(QMainWindow):
         self.pushButton_Gradient.clicked.connect(self.start_gradient)
         self.pushButton_EyB.clicked.connect(self.start_EyB)
         self.pushButton_LC.clicked.connect(self.start_LC)
+        self.pushButton_Order.clicked.connect(self.start_Order)
 
     def open_file(self):
         self.entregable_path = QFileDialog.getExistingDirectory(self,"Seleccionar Entregable","c:\\")
@@ -48,6 +50,10 @@ class UI(QMainWindow):
     def start_EyB(self):
         times_eyb(self.entregable_path)
         self.label_8.setText("Finalizado")
+
+    def start_Order(self):
+        order_files(self.entregable_path)
+        self.label_9.setText("Finalizado")
 
 def main():
     app = QApplication(sys.argv)
