@@ -48,6 +48,7 @@ def tile_report(ruta):
         else:
             print("********** Revisando Longitudes de Cola Atipicos **********")
         for index2,excel_path in enumerate(lista):
+            print(f"Revisando excel ({index2+1}/{len(lista)})")
             wb = load_workbook(excel_path,read_only=True,data_only=True)
             ws = wb['Base Data']
         

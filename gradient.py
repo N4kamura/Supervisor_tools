@@ -75,7 +75,7 @@ def gradient_analysis(ruta):
 
             wb.close()
 
-            path_formato = "./tools/Formato_Vehicular.xlsx"
+            path_formato = "./images/Formato_Vehicular.xlsx"
             final_path, name_excel = os.path.split(ruta_excel)
             new_directory = os.path.join(final_path+' (Protransito)','Gradiente')
             if not os.path.exists(new_directory):
@@ -88,8 +88,8 @@ def gradient_analysis(ruta):
                 ws = wb[hoja]
                 columns_to_hide = []
                 for i,col in enumerate(list_columnas[index]):
-                    if sum(col)==0:
-                        columns_to_hide.append(11+i)
+                    """ if sum(col)==0:
+                        columns_to_hide.append(11+i) """
                     for j in range(96):
                         if j>=0:
                             celda = ws.cell(row=16+j,column=11+i)

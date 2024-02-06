@@ -68,9 +68,9 @@ def read_excel_vehicular(excel_path
         except ValueError:
             LOGGER.critical(f"Para motos en la hoja '{hoja}' hay datos que no son números")
         MOTO = np.nan_to_num(MOTO, nan=0.0)
-        MOTO_MORNING = MOTO[27:39,:]
-        MOTO_EVENING = MOTO[49:61,:]
-        MOTO_NIGHT = MOTO[71:83,:]
+        MOTO_MORNING = MOTO[26:38,:]
+        MOTO_EVENING = MOTO[48:60,:]
+        MOTO_NIGHT = MOTO[70:82,:]
 
         CAR_LIST.append([CAR_MORNING,CAR_EVENING,CAR_NIGHT]) #POR HOJA
         MOTO_LIST.append([MOTO_MORNING,MOTO_EVENING,MOTO_NIGHT]) #POR HOJA
@@ -91,7 +91,6 @@ def read_excel_pedestrian(excel_path
                   slice("K25","K34")]
     
     matrix_slice = slice("L20","UY83")
-    moto_slice = slice("U16","AD112")
 
     #Reading number of turns
 
@@ -200,8 +199,10 @@ def find_duplicate_cars(CARS, length, ws, accum_count, sheet, excel_name) -> int
                     for elem in set:
                         result += str(elem)+ ', '
                     ws.cell(row=count+2, column=1, value=result[:-2])
-                    ws.cell(row=count+2, column=2, value=hojas[sheet])
-                    ws.cell(row=count+2, column=3, value=excel_name)
+                    ws.cell(row=count+2, column=2, value=f"{i}-{i+length}")
+                    ws.cell(row=count+2, column=3, value=f"{j}-{j+length}")
+                    ws.cell(row=count+2, column=4, value=hojas[sheet])
+                    ws.cell(row=count+2, column=5, value=excel_name)
                     #print(f"Conjunto repetido: {set}, Hoja: {hojas[sheet]}, Fila: {count+2}")
                     repes_list.append(set)
                     count += 1
@@ -240,38 +241,7 @@ def jump_multiple():
     pass
 
 def main():
-    directory = r"C:\Users\dacan\OneDrive\Desktop\PRUEBAS\Supervisor\Entregable Nro 06\7.- Informacion de Campo\Peatonal\Tipico\Pruebitas"
-    logger_path = os.path.join(directory,"LOGS")
-    if not os.path.exists(logger_path):
-        os.mkdir(logger_path)
-    fh = logging.FileHandler(os.path.join(directory,"LOGS","means.log"))
-    fh.setFormatter(f)
-    LOGGER.addHandler(fh)
-    excels = os.listdir(directory)
-    excels = [excel for excel in excels if excel.endswith('.xlsm') and '~$' not in excel]
-    new_excel = os.path.join(directory, "Pattern_Summary.xlsx")
-    wb = Workbook()
-    wb.save(new_excel)
-    wb.close()
-
-    wb = load_workbook(new_excel)
-    ws = wb['Sheet']
-
-    ws.cell(row=1, column=1, value="Patrón")
-    ws.cell(row=1, column=2, value="Excel")
-
-    accum_count = 0
-
-    for excel in excels:
-        MORNING, EVENING, NIGHT = read_excel_pedestrian(os.path.join(directory,excel))
-        current_count = find_duplicate_pedestrian(MORNING, EVENING, NIGHT, 4, ws, accum_count, excel)
-        accum_count = current_count
-
-    wb.save(new_excel)
-    wb.close()
-        
-    # directory = r"C:\Users\dacan\OneDrive\Desktop\PRUEBAS\Supervisor\Entregable Nro 06\7.- Informacion de Campo\Vehicular\Raw_Data"
-
+    # directory = r"C:\Users\dacan\OneDrive\Desktop\PRUEBAS\Supervisor\Entregable Nro 07\7.- Informacion de Campo\Vehicular\Atipico"
     # logger_path = os.path.join(directory,"LOGS")
     # if not os.path.exists(logger_path):
     #     os.mkdir(logger_path)
@@ -280,33 +250,66 @@ def main():
     # LOGGER.addHandler(fh)
     # excels = os.listdir(directory)
     # excels = [excel for excel in excels if excel.endswith('.xlsm') and '~$' not in excel]
-    # new_excel = os.path.join(directory,"Pattern_Summary.xlsx")
-    # if not os.path.exists(new_excel):
-    #     wb = Workbook()
-    #     wb.save(new_excel)
-    #     wb.close()
+    # new_excel = os.path.join(directory, "Pattern_Summary.xlsx")
+    # wb = Workbook()
+    # wb.save(new_excel)
+    # wb.close()
 
     # wb = load_workbook(new_excel)
     # ws = wb['Sheet']
 
-    # #Encabezados:
     # ws.cell(row=1, column=1, value="Patrón")
-    # ws.cell(row=1, column=2, value="Hoja")
-    # ws.cell(row=1, column=3, value="Excel")
+    # ws.cell(row=1, column=2, value="Excel")
 
-    # acumm_count = 0
-    # for count, excel in enumerate(excels):
-    #     print(f"{count+1}/{len(excels)} Reading: {excel}")
-    #     CARS_LIST, MOTOS_LIST = read_excel_vehicular(os.path.join(directory, excel))
-    #     for sheet, CARS in enumerate(CARS_LIST): #CARS = Arreglo por sentido.
-    #         current_count = find_duplicate(CARS,4,ws,acumm_count, sheet,excel)
-    #         acumm_count = current_count
-    #     for sheet, MOTOS in enumerate(MOTOS_LIST):
-    #         current_count = find_duplicate(MOTOS,4,ws,acumm_count,sheet,excel)
-    #         acumm_count = current_count
+    # accum_count = 0
+
+    # for excel in excels:
+    #     MORNING, EVENING, NIGHT = read_excel_pedestrian(os.path.join(directory,excel))
+    #     current_count = find_duplicate_pedestrian(MORNING, EVENING, NIGHT, 4, ws, accum_count, excel)
+    #     accum_count = current_count
 
     # wb.save(new_excel)
     # wb.close()
+        
+    """ directory = r"C:\Users\dacan\OneDrive\Desktop\PRUEBAS\Supervisor\Entregable Nro 07\7.- Informacion de Campo\Vehicular\Tipico"
+
+    logger_path = os.path.join(directory,"LOGS")
+    if not os.path.exists(logger_path):
+        os.mkdir(logger_path)
+    fh = logging.FileHandler(os.path.join(directory,"LOGS","means.log"))
+    fh.setFormatter(f)
+    LOGGER.addHandler(fh)
+    excels = os.listdir(directory)
+    excels = [excel for excel in excels if excel.endswith('.xlsm') and '~$' not in excel]
+    new_excel = os.path.join(directory,"Pattern_Summary.xlsx")
+    if not os.path.exists(new_excel):
+        wb = Workbook()
+        wb.save(new_excel)
+        wb.close()
+
+    wb = load_workbook(new_excel)
+    ws = wb['Sheet']
+
+    #Encabezados:
+    ws.cell(row=1, column=1, value="Patrón")
+    ws.cell(row=1, column=2, value="Original")
+    ws.cell(row=1, column=3, value="Duplicate")
+    ws.cell(row=1, column=4, value="Hoja")
+    ws.cell(row=1, column=5, value="Excel")
+
+    acumm_count = 0
+    for count, excel in enumerate(excels):
+        print(f"{count+1}/{len(excels)} Reading: {excel}")
+        CARS_LIST, MOTOS_LIST = read_excel_vehicular(os.path.join(directory, excel))
+        for sheet, CARS in enumerate(CARS_LIST): #CARS = Arreglo por sentido.
+            current_count = find_duplicate_cars(CARS,4,ws,acumm_count, sheet,excel)
+            acumm_count = current_count
+        for sheet, MOTOS in enumerate(MOTOS_LIST):
+            current_count = find_duplicate_cars(MOTOS,4,ws,acumm_count,sheet,excel)
+            acumm_count = current_count
+
+    wb.save(new_excel)
+    wb.close() """
 
 if __name__ == '__main__':
     main()
