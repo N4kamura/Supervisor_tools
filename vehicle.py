@@ -89,6 +89,7 @@ def vehicular(entregable_path):
 
             data_consultor,fecha,giros,_ = read_excel_vehicular(pair[1],False)
             data_supervisor,_,giros_compare,quarter_hour = read_excel_vehicular(pair[0],True)
+            
             giros_cons = []
             for giro in giros:
                 AUX = [elem for elem in giro if isinstance(elem,int)]
@@ -139,7 +140,6 @@ def vehicular(entregable_path):
 
             # Formats #
             porcentaje_style = NamedStyle(name="porcentaje")
-            #porcentaje_style.number_format = '0%'
             porcentaje_style.border = Border(left=Side(style='thin'),
                                             right=Side(style='thin'),
                                             top=Side(style='thin'),
@@ -213,7 +213,8 @@ def vehicular(entregable_path):
             tamaño_clase = rango / num_clases
             tamaño_clase_entero = math.ceil(tamaño_clase)
 
-            limite_inferior = min(LISTA)
+            #limite_inferior = min(LISTA)
+            limite_inferior = 1
             clases = []
             for _ in range(num_clases):
                 limite_superior = limite_inferior + tamaño_clase_entero
@@ -227,7 +228,7 @@ def vehicular(entregable_path):
                         frecuencias[j] += 1
                         break
 
-            frec_relativa = [f / num_datos for f in frecuencias]
+            frec_relativa = [f / sum(frecuencias) for f in frecuencias]
             frec_acumulada = [sum(frec_relativa[:i+1]) for i in range(num_clases)]
 
             table = doc.add_table(rows=1,cols=4,style="Table Grid")
