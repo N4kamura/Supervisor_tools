@@ -42,7 +42,10 @@ def times_eyb(ruta):
         for index2, excel_path in enumerate(lista):
             print(f"Revisando excel ({index2+1}/{len(lista)})")
             wb = load_workbook(excel_path,read_only=True,data_only=True)
-            ws = wb["Base Data"]
+            try:
+                ws = wb["Base Data"]
+            except KeyError:
+                print(f"Error en excel:\n{excel_path}")
 
             periods_counts = []
             columns = [
@@ -59,7 +62,8 @@ def times_eyb(ruta):
                 periods_counts.append(count_none) #Un elemento periods_counts contiene los conteos de un excel
 
             _, name_excel = os.path.split(excel_path)
-            patron = r"([A-Z]+-[0-9]+)"
+            #patron = r"([A-Z]+-[0-9]+)"
+            patron = r"([A-Z]+[0-9]+)"
             coincidencia = re.search(patron,name_excel)
             if coincidencia:
                 codigo = coincidencia.group(1)

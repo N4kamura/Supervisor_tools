@@ -165,7 +165,7 @@ def vehicular(entregable_path):
             wb.save(final_route)
 
             _, nombre_archivo = os.path.split(ruta_destino)
-            patron = r"^([A-Z]+-[0-9]+)"
+            patron = r"([A-Z]+[0-9]+)"
             coincidencia = re.search(patron, nombre_archivo)
 
             if coincidencia:
@@ -197,7 +197,7 @@ def vehicular(entregable_path):
         for dt in data:
             if dt[5]==False:
                 paragraph = doc.add_paragraph()
-                run = paragraph.add_run("Los giros de Protránsito no coinciden con los giros de EDSA.")
+                run = paragraph.add_run(f"{dt[0]}: Los giros de Protránsito no coinciden con los giros de EDSA.")
                 continue
             
             CODIGO = dt[0]

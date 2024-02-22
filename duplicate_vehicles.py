@@ -18,7 +18,7 @@ f = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
  """
 
 def read_excel_vehicular(excel_path
-               ) -> type(np.array) and type(np.array) and list:
+               ) -> type(np.array) and type(np.array) and list: #type: ignore
     """Función que obtiene los conteos por giros de vehículos y motocicletas para todos los sentidos.
     """
     
@@ -80,7 +80,7 @@ def read_excel_vehicular(excel_path
     return CAR_LIST, MOTO_LIST
 
 def read_excel_pedestrian(excel_path
-               ) -> type(np.array) and type(np.array) and list:
+               ) -> type(np.array) and type(np.array) and list: # type: ignore
     """Función que obtiene los conteos por giros de vehículos y motocicletas para todos los sentidos.
     """
     
@@ -176,8 +176,7 @@ def read_excel_pedestrian(excel_path
     return MORNING, EVENING, NIGHT
 
 def find_duplicate_cars(CARS, length, ws, accum_count, sheet, excel_name) -> int:
-    """Función para encontrar los patrones repetidos según la longitud del patrón especificado.
-    """
+    """Función para encontrar los patrones repetidos según la longitud del patrón especificado."""
     hojas = ['N','S','E','O']
     
     count = accum_count
@@ -234,54 +233,62 @@ def find_duplicate_pedestrian(MORNING, EVENING, NIGHT, length, ws, accum_count, 
 
     return count
 
-def jump_single():
-    pass
-
-def jump_multiple():
-    pass
-
-def main():
-    # directory = r"C:\Users\dacan\OneDrive\Desktop\PRUEBAS\Supervisor\Entregable Nro 07\7.- Informacion de Campo\Vehicular\Atipico"
-    # logger_path = os.path.join(directory,"LOGS")
-    # if not os.path.exists(logger_path):
-    #     os.mkdir(logger_path)
-    # fh = logging.FileHandler(os.path.join(directory,"LOGS","means.log"))
-    # fh.setFormatter(f)
-    # LOGGER.addHandler(fh)
-    # excels = os.listdir(directory)
-    # excels = [excel for excel in excels if excel.endswith('.xlsm') and '~$' not in excel]
-    # new_excel = os.path.join(directory, "Pattern_Summary.xlsx")
-    # wb = Workbook()
-    # wb.save(new_excel)
-    # wb.close()
-
-    # wb = load_workbook(new_excel)
-    # ws = wb['Sheet']
-
-    # ws.cell(row=1, column=1, value="Patrón")
-    # ws.cell(row=1, column=2, value="Excel")
-
-    # accum_count = 0
-
-    # for excel in excels:
-    #     MORNING, EVENING, NIGHT = read_excel_pedestrian(os.path.join(directory,excel))
-    #     current_count = find_duplicate_pedestrian(MORNING, EVENING, NIGHT, 4, ws, accum_count, excel)
-    #     accum_count = current_count
-
-    # wb.save(new_excel)
-    # wb.close()
-        
-    """ directory = r"C:\Users\dacan\OneDrive\Desktop\PRUEBAS\Supervisor\Entregable Nro 07\7.- Informacion de Campo\Vehicular\Tipico"
+def duplicated_pedestrians(directory, length):
+    pedestrian_path = os.path.join(directory,"7.- Informacion de Campo", "Peatonal")
+    tipico_files = os.listdir(os.path.join(pedestrian_path,"Tipico"))
+    atipico_files = os.listdir(os.path.join(pedestrian_path,"Atipico"))
 
     logger_path = os.path.join(directory,"LOGS")
     if not os.path.exists(logger_path):
         os.mkdir(logger_path)
-    fh = logging.FileHandler(os.path.join(directory,"LOGS","means.log"))
+    fh = logging.FileHandler(os.path.join(directory,"LOGS","pedestrian.log"))
     fh.setFormatter(f)
     LOGGER.addHandler(fh)
-    excels = os.listdir(directory)
-    excels = [excel for excel in excels if excel.endswith('.xlsm') and '~$' not in excel]
-    new_excel = os.path.join(directory,"Pattern_Summary.xlsx")
+
+    tipico_files = [file for file in tipico_files if file.endswith(".xlsm") and not file.startswith("~")]
+    atipico_files = [file for file in atipico_files if file.endswith(".xlsm") and not file.startswith("~")]
+
+    new_excel = os.path.join(pedestrian_path, "Pattern_Summary_Pedestrians.xlsx")
+    wb = Workbook()
+    wb.save(new_excel)
+    wb.close()
+
+    wb = load_workbook(new_excel)
+    ws = wb['Sheet']
+
+    ws.cell(row=1, column=1, value="Patrón")
+    ws.cell(row=1, column=2, value="Excel")
+
+    accum_count = 0
+    print("### STARTING PEDESTRIAN PATTERNS FINDER ###")
+    print("############### TIPICO ####################")
+    for excel in tipico_files:
+        MORNING, EVENING, NIGHT = read_excel_pedestrian(os.path.join(pedestrian_path,"Tipico",excel))
+        current_count = find_duplicate_pedestrian(MORNING, EVENING, NIGHT, length, ws, accum_count, excel)
+        accum_count = current_count
+
+    print("############### ATIPICO ###################")
+    for excel in atipico_files:
+        MORNING, EVENING, NIGHT = read_excel_pedestrian(os.path.join(pedestrian_path,"Atipico",excel))
+        current_count = find_duplicate_pedestrian(MORNING, EVENING, NIGHT, length, ws, accum_count, excel)
+        accum_count = current_count
+
+    wb.save(new_excel)
+    wb.close()
+
+def duplicated_carsandmc(directory, length):
+    vehicle_path = os.path.join(directory, "7.- Informacion de Campo", "Vehicular")
+    tipico_files = os.listdir(os.path.join(vehicle_path,"Tipico"))
+    atipico_files = os.listdir(os.path.join(vehicle_path,"Atipico"))
+
+    logger_path = os.path.join(directory,"LOGS")
+    if not os.path.exists(logger_path):
+        os.mkdir(logger_path)
+    fh = logging.FileHandler(os.path.join(directory,"LOGS","carsandmc.log"))
+    fh.setFormatter(f)
+    LOGGER.addHandler(fh)
+
+    new_excel = os.path.join(vehicle_path,"Pattern_Summary_CarsandMC.xlsx")
     if not os.path.exists(new_excel):
         wb = Workbook()
         wb.save(new_excel)
@@ -298,18 +305,28 @@ def main():
     ws.cell(row=1, column=5, value="Excel")
 
     acumm_count = 0
-    for count, excel in enumerate(excels):
-        print(f"{count+1}/{len(excels)} Reading: {excel}")
-        CARS_LIST, MOTOS_LIST = read_excel_vehicular(os.path.join(directory, excel))
+    print("### STARTING VEHICLE PATTERNS FINDER ###")
+    print("############## TIPICO ##################")
+    for count, excel in enumerate(tipico_files):
+        print(f"Reading: ({count+1}/{len(tipico_files)})")
+        CARS_LIST, MOTOS_LIST = read_excel_vehicular(os.path.join(vehicle_path, "Tipico", excel))
         for sheet, CARS in enumerate(CARS_LIST): #CARS = Arreglo por sentido.
-            current_count = find_duplicate_cars(CARS,4,ws,acumm_count, sheet,excel)
+            current_count = find_duplicate_cars(CARS,length,ws,acumm_count, sheet,excel)
             acumm_count = current_count
         for sheet, MOTOS in enumerate(MOTOS_LIST):
-            current_count = find_duplicate_cars(MOTOS,4,ws,acumm_count,sheet,excel)
+            current_count = find_duplicate_cars(MOTOS,length,ws,acumm_count,sheet,excel)
+            acumm_count = current_count
+            
+    print("############# ATIPICO ##################")
+    for count, excel in enumerate(atipico_files):
+        print(f"Reading: ({count+1}/{len(atipico_files)})")
+        CARS_LIST, MOTOS_LIST = read_excel_vehicular(os.path.join(vehicle_path, "Atipico", excel))
+        for sheet, CARS in enumerate(CARS_LIST): #CARS = Arreglo por sentido.
+            current_count = find_duplicate_cars(CARS,length,ws,acumm_count, sheet,excel)
+            acumm_count = current_count
+        for sheet, MOTOS in enumerate(MOTOS_LIST):
+            current_count = find_duplicate_cars(MOTOS,length,ws,acumm_count,sheet,excel)
             acumm_count = current_count
 
     wb.save(new_excel)
-    wb.close() """
-
-if __name__ == '__main__':
-    main()
+    wb.close()

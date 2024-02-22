@@ -83,19 +83,19 @@ def peatonal(entregable_path):
             else:
                 print(f"Comparando Atipicos ({index+1}/{len(archivos[j])})")
             #0: Supervisor / 1: Consultor
-            data_consultor,fecha, giros = read_excel_peatonal(arch[1]) #pares de archivos - tupla
-            data_supervisor,_,giros_compare = read_excel_peatonal(arch[0]) #"_" para solo requerir dato de la primera entrada
+            data_consultor,fecha, giros, _ = read_excel_peatonal(arch[1], False) #pares de archivos - tupla
+            data_supervisor,_,giros_compare, quarter_hour = read_excel_peatonal(arch[0], True) #"_" para solo requerir dato de la primera entrada
 
             #Giros:
             giros_cons = []
             for giro in giros:
-                AUX = [elem for elem in giro if isinstance(elem, int)]
-                giros_cons.append(AUX)
+                if isinstance(giro, int):
+                    giros_cons.append(giro)
 
             giros_sup = []
             for giro in giros_compare:
-                AUX = [elem for elem in giro if isinstance(elem, int)]
-                giros_sup.append(AUX)
+                if isinstance(giro, int):
+                    giros_sup.append(giro)
 
             stop = 0
             for (i, giro_cons), giro_sup in zip(enumerate(giros_cons), giros_sup):
@@ -144,10 +144,9 @@ def peatonal(entregable_path):
                                             top=Side(style='thin'),
                                             bottom=Side(style='thin'),)
             ws = wb['Data Peatonal']
-            for giro in giros:
-                for p, valor in enumerate(giro):
-                    celda = ws.cell(row=19, column=p+12)
-                    celda.value = valor
+            for i in range(len(giros)):
+                celda = ws.cell(row=19, column=i+12)
+                celda.value = giros[i]
 
             for result in resultados:
                 for k, fila in enumerate(result):
@@ -157,19 +156,19 @@ def peatonal(entregable_path):
                         else: celda.value = valor
 
                         celda.style = porcentaje_style
-    wb.save(final_route)
-    _, nombre_archivo = os.path.split(ruta_destino)
-    patron = r"^([A-Z]+-[0-9]+)"
-    coincidencia = re.search(patron, nombre_archivo)
+            
+            wb.save(final_route)
+            _, nombre_archivo = os.path.split(ruta_destino)
+            patron = r"([A-Z]+[0-9]+)"
+            coincidencia = re.search(patron, nombre_archivo)
 
-    if coincidencia:
-        codigo = coincidencia.group(1)
-    else:
-        print(f"El archivo de excel no posee Código de intersección:\n{nombre_archivo}")
-        codigo = "ERROR"
+            if coincidencia:
+                codigo = coincidencia.group(1)
+            else:
+                print(f"El archivo de excel no posee Código de intersección:\n{nombre_archivo}")
+                codigo = "ERROR"
     
-    quarter_hour = 0 #<-------- CORREGIR
-    data_row[index].append((codigo, fecha[:-9], tipicidad, A, quarter_hour, check))
+            data_row[j].append((codigo, fecha[:-9], tipicidad, A, quarter_hour, check))
 
     final_lectura = time.time()
 
@@ -188,88 +187,93 @@ def peatonal(entregable_path):
     titulos = ['Clase', 'Frecuencia','Frecuencia Relativa','Frecuencia Acumulada']
 
     for i, data in enumerate(data_row):
-        if data[5] == False:
-            paragraph = doc.add_paragraph()
-            run = paragraph.add_run("Los giros de Protránsito no coinciden con los giros de EDSA.")
+        if len (data) == 0: #No existe data para típico o atípico
             continue
-    
-        CODIGO = data[0]
-        FECHA = data[1]
-        TIPICIDAD = data[2]
-        LISTA = data[3]
-        HORA = data[4]
 
-        #Tratamiento de la lista completa
-        num_datos = len(LISTA)
-        num_clases = int(1+3.322*(num_datos**(1/3)))
-        rango = max(LISTA) - min(LISTA)
-        tamano_clase = rango / num_clases
-        tamano_clase_entero = math.ceil(tamano_clase)
-
-        #limite_inferior = min(LISTA)
-        limite_inferior = 1
-        clases = []
-        for _ in range(num_clases):
-            limite_superior = limite_inferior + tamano_clase_entero
-            clases.append((limite_inferior, limite_superior))
-            limite_inferior = limite_superior
-
-        print(clases)
-
-        frecuencias = [0]*num_clases
-        for dato in LISTA:
-            for j, clase in enumerate(clases):
-                if clases[0] <= dato < clase[1]:
-                    frecuencias[j] += 1
-                    break
-
-        frec_relativa = [f / sum(frecuencias) for f in frecuencias]
-        frec_acumulada = [sum(frec_relativa[:i+1]) for i in range(num_clases)]
-
-        table = doc.add_table(rows=1, cols=4, style='Table Grid')
-        table.cell(0,0).text = 'Código'
-        table.cell(0,1).text = 'Fecha'
-        table.cell(0,2).text = 'Tipicidad'
-        table.cell(0,3).text = 'Hora'
-
-        for j in range(4):
-            _put_format(table,0,j)
-
-        row = table.add_row().cells
-        row[0].text = CODIGO
-        row[1].text = str(FECHA)
-        row[2].text = str(TIPICIDAD)
-        horas_inicio = HORA//4
-        minutos_inicio = int(((HORA/4-HORA//4))*60)
-        horas_fin = (HORA+1)//4
-        minutos_fin = int((((HORA+1)/4-(HORA+1)//4))*60)
-        row[3].text = f"{horas_inicio:02}:{minutos_inicio:02} - {horas_fin:02}:{minutos_fin:02}"
-
-        row = table.add_row().cells
-        for i, titulo in enumerate(titulos):
-            row[i].text = titulo
-
-        for clase, frecuencia, relativa, acumulada, in zip(clases,frecuencias, frec_relativa, frec_acumulada):
-            row = table.add_row().cells
-            row[0].text = str(f"{int(clase[0])} - {int(clase[1])}")
-            row[1].text = str(frecuencia)
-            row[2].text = str(int(relativa*100))+'%'
-            row[3].text = str(int(acumulada*100))+'%'
-
-        for row in table.rows:
-            for cell in row.cells:
-                cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-                cell.vertical_alignment = WD_ALIGN_PARAGRAPH.CENTER
-                for paragraph in cell.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.size = Pt(10)
-        _put_format(table,2,0)
-        _put_format(table,2,1)
-        _put_format(table,2,2)
-        _put_format(table,2,3)
+        for dt in data:
+            if dt[5] == False:
+                paragraph = doc.add_paragraph()
+                run = paragraph.add_run("Los giros de Protránsito no coinciden con los giros de EDSA.")
+                continue
         
-        paragraph = doc.add_paragraph()
-        paragraph.add_run().add_break()
+            CODIGO      = dt[0]
+            FECHA       = dt[1]
+            TIPICIDAD   = dt[2]
+            LISTA       = dt[3]
+            HORA        = dt[4]
+
+            #Tratamiento de la lista completa
+            num_datos = len(LISTA)
+            num_clases = int(1+3.322*(num_datos**(1/3)))
+            rango = max(LISTA) - min(LISTA)
+            tamano_clase = rango / num_clases
+            tamano_clase_entero = math.ceil(tamano_clase)
+
+            #limite_inferior = min(LISTA)
+            limite_inferior = 1
+            clases = []
+            for _ in range(num_clases):
+                limite_superior = limite_inferior + tamano_clase_entero
+                clases.append((limite_inferior, limite_superior))
+                limite_inferior = limite_superior
+
+            frecuencias = [0]*num_clases
+            for dato in LISTA:
+                for j, clase in enumerate(clases):
+                    if clase[0] <= dato < clase[1]:
+                        frecuencias[j] += 1
+                        break
+            
+            if sum(frecuencias) == 0:
+                frec_relativa = [0]*len(frecuencias)
+            else:
+                frec_relativa = [f / sum(frecuencias) for f in frecuencias]
+            frec_acumulada = [sum(frec_relativa[:i+1]) for i in range(num_clases)]
+
+            table = doc.add_table(rows=1, cols=4, style='Table Grid')
+            table.cell(0,0).text = 'Código'
+            table.cell(0,1).text = 'Fecha'
+            table.cell(0,2).text = 'Tipicidad'
+            table.cell(0,3).text = 'Hora'
+
+            for j in range(4):
+                _put_format(table,0,j)
+
+            row = table.add_row().cells
+            row[0].text = CODIGO
+            row[1].text = str(FECHA)
+            row[2].text = str(TIPICIDAD)
+            horas_inicio = HORA//4
+            minutos_inicio = int(((HORA/4-HORA//4))*60)
+            horas_fin = (HORA+1)//4
+            minutos_fin = int((((HORA+1)/4-(HORA+1)//4))*60)
+            row[3].text = f"{horas_inicio:02}:{minutos_inicio:02} - {horas_fin:02}:{minutos_fin:02}"
+
+            row = table.add_row().cells
+            for i, titulo in enumerate(titulos):
+                row[i].text = titulo
+
+            for clase, frecuencia, relativa, acumulada, in zip(clases,frecuencias, frec_relativa, frec_acumulada):
+                row = table.add_row().cells
+                row[0].text = str(f"{int(clase[0])} - {int(clase[1])}")
+                row[1].text = str(frecuencia)
+                row[2].text = str(int(relativa*100))+'%'
+                row[3].text = str(int(acumulada*100))+'%'
+
+            for row in table.rows:
+                for cell in row.cells:
+                    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    cell.vertical_alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(10)
+            _put_format(table,2,0)
+            _put_format(table,2,1)
+            _put_format(table,2,2)
+            _put_format(table,2,3)
+            
+            paragraph = doc.add_paragraph()
+            paragraph.add_run().add_break()
                         
     #MODIFICAMOS LA UBICACIÓN DEL INFORME 
     try:

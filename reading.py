@@ -3,7 +3,7 @@ import numpy as np
 import os
 from collections import Counter
 
-def read_excel_peatonal(excel_path): #define la lectura del excel, colocación a 0 de type flotante
+def read_excel_peatonal(excel_path, us): #define la lectura del excel, colocación a 0 de type flotante
     #global hojas #invoca variables fuera de la función
     wb = load_workbook(excel_path,read_only=True,data_only=True)
     data =[]
@@ -13,7 +13,15 @@ def read_excel_peatonal(excel_path): #define la lectura del excel, colocación a
     data_hoja = [[celda.value for celda in fila] for fila in ws['L20:UY79']] #fila-celda SE CAMBIA EL RANGO
     try:
         matriz_numpy = np.array(data_hoja,dtype="float") #conversión a np
-    except ValueError:
+        if us:
+            index = (np.where(~np.isnan(matriz_numpy).all(axis=1))[0])
+            if len(index) > 0:
+                quarter_hour = index[0]
+            else:
+                quarter_hour = 0 #No existe en teoría
+        else:
+            quarter_hour = 0
+    except TypeError:
         print("Hay un valor que no es número en la base de datos")
         _, excel_name = os.path.split(excel_path)
         print(f"Excel = {excel_name}")
@@ -24,7 +32,7 @@ def read_excel_peatonal(excel_path): #define la lectura del excel, colocación a
     ws = wb["Inicio"] #guarda fecha
     fecha = str(ws['G5'].value) #Por cada excel
 
-    return data,fecha,valores
+    return data,fecha,valores, quarter_hour
 
 def read_excel_vehicular(excel_path,us):
     hojas = ["N","S","E","O"]
