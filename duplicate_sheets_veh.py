@@ -9,7 +9,32 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
 f = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-def read_excel(excel_path, num_veh_classes
+def read_excel_ped(excel_path, num_ped_classes
+                   ) -> type(np.array): #type: ignore
+    """Función que obtiene los conteos por giros de todos los peatonales para todos los sentidos."""
+    turn_slice = [slice("G13","G22"),
+                  slice("K13","K22"),
+                  slice("G25","G34"),
+                  slice("K25","K34")]
+    
+    wb = load_workbook(excel_path, read_only=True, data_only=True)
+    ws = wb['Inicio']
+
+    try:
+        quantities = [
+            [row[0].value for row in ws[s]].index(None)
+            for s in turn_slice
+        ]
+    except ValueError:
+        quantities = []
+        for s in turn_slice:
+            column_data = [row[0].value for row in ws[s] if row[0].value is not None]
+            if len(column_data) == 10:
+                quantities.append(10)
+            else:
+                quantities.append(len(column_data))
+
+def read_excel_veh(excel_path, num_veh_classes
                ) -> type(np.array) and type(np.array) and list: #type: ignore
     """Función que obtiene los conteos por giros de todos los vehículos para todos los sentidos."""
     
@@ -166,7 +191,7 @@ def sheets_duplicated(directory) -> None:
         print(f"Analizando Excel ({i+1}/{len(tipico_files)})")
         route_excel = os.path.join(vehicle_path, "Tipico", excel)
         try:
-            EXCEL = read_excel(route_excel, 11)
+            EXCEL = read_excel_veh(route_excel, 11)
         except Exception as e:
             print(f"Error en este excel:\n{excel}")
             LOGGER.error(f"Error en este excel:\n{excel}")
@@ -178,7 +203,7 @@ def sheets_duplicated(directory) -> None:
         print(f"Analizando Excel ({i+1}/{len(atipico_files)})")
         route_excel = os.path.join(vehicle_path, "Atipico", excel)
         try:
-            EXCEL = read_excel(route_excel, 11)
+            EXCEL = read_excel_veh(route_excel, 11)
         except Exception as e:
             print(f"Error en este excel:\n{excel}")
             LOGGER.error(f"Error en este excel:\n{excel}")
