@@ -9,7 +9,7 @@ from gradient import gradient_analysis
 from tiles import tile_report
 from eyb import times_eyb
 from order import order_files
-from duplicate_excels import excels_duplicated
+from duplicate_excels import excels_duplicated_excels_veh, excels_duplicated_excels_ped
 from duplicate_sheets_veh import sheets_duplicated
 from duplicate_vehicles_veh import duplicated_carsandmc, duplicated_pedestrians
 from get_dates import *
@@ -31,8 +31,9 @@ class UI(QMainWindow):
         self.pushButton_Order.clicked.connect(self.start_Order)
         self.pushButton_sheets.clicked.connect(self.start_sheets)
         self.pushButton_excels.clicked.connect(self.start_excels)
-        self.pushButton_cars.clicked.connect(self.start_cars)
-        self.pushButton_mc.clicked.connect(self.start_pedestrian)
+        self.pushButton_carsandmc.clicked.connect(self.start_cars)
+        self.pushButton_peds.clicked.connect(self.start_peds)
+        self.pushButton_excels_peds.clicked.connect(self.start_excels_peds)
         self.pushButton_dates.clicked.connect(self.start_dates)
         self.lineEdit.setText("")
 
@@ -86,7 +87,7 @@ class UI(QMainWindow):
     def start_excels(self):
         if self.lineEdit.text() == "" or self.lineEdit.text() == "Selecciona un directorio":
             return self.lineEdit.setText("Selecciona un directorio")
-        excels_duplicated(self.entregable_path)
+        excels_duplicated_excels_veh(self.entregable_path)
         self.label_11.setText("Finalizado")
 
     def start_cars(self):
@@ -96,19 +97,25 @@ class UI(QMainWindow):
         duplicated_carsandmc(self.entregable_path, length)
         self.label_12.setText("Finalizado")
 
-    def start_pedestrian(self):
+    def start_peds(self):
         if self.lineEdit.text() == "" or self.lineEdit.text() == "Selecciona un directorio":
             return self.lineEdit.setText("Selecciona un directorio")
         length = self.spinBox_2.value()
         duplicated_pedestrians(self.entregable_path, length)
         self.label_13.setText("Finalizado")
-    
+
+    def start_excels_peds(self):
+        if self.lineEdit.text() == "" or self.lineEdit.text() == "Selecciona un directorio":
+            return self.lineEdit.setText("Selecciona un directorio")
+        excels_duplicated_excels_ped(self.entregable_path)
+        self.label_14.setText("Finalizado")
+
     def start_dates(self):
         if self.lineEdit.text() == "" or self.lineEdit.text() == "Selecciona un directorio":
             return self.lineEdit.setText("Selecciona un directorio")
         data = find_files(self.entregable_path)
         create_summary(data, self.entregable_path)
-        self.label_14.setText("Finalizado")
+        self.label_15.setText("Finalizado")
 
 def main():
     app = QApplication(sys.argv)

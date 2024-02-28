@@ -17,8 +17,7 @@ f = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 50  CRITICAL    logging.critical()  Highest level. Blockers which fails your whole program.
  """
 
-def read_excel_vehicular(excel_path
-               ) -> type(np.array) and type(np.array) and list: #type: ignore
+def read_excel_vehicular(excel_path) -> type(np.array) and type(np.array) and list: #type: ignore
     """Función que obtiene los conteos por giros de vehículos y motocicletas para todos los sentidos.
     """
     
@@ -79,8 +78,7 @@ def read_excel_vehicular(excel_path
 
     return CAR_LIST, MOTO_LIST
 
-def read_excel_pedestrian(excel_path
-               ) -> type(np.array) and type(np.array) and list: # type: ignore
+def read_excel_pedestrian(excel_path) -> type(np.array) and type(np.array) and list: # type: ignore
     """Función que obtiene los conteos por giros de vehículos y motocicletas para todos los sentidos.
     """
     

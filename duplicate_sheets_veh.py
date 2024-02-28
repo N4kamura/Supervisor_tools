@@ -8,32 +8,7 @@ import os
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
 f = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-
-def read_excel_ped(excel_path, num_ped_classes
-                   ) -> type(np.array): #type: ignore
-    """Función que obtiene los conteos por giros de todos los peatonales para todos los sentidos."""
-    turn_slice = [slice("G13","G22"),
-                  slice("K13","K22"),
-                  slice("G25","G34"),
-                  slice("K25","K34")]
     
-    wb = load_workbook(excel_path, read_only=True, data_only=True)
-    ws = wb['Inicio']
-
-    try:
-        quantities = [
-            [row[0].value for row in ws[s]].index(None)
-            for s in turn_slice
-        ]
-    except ValueError:
-        quantities = []
-        for s in turn_slice:
-            column_data = [row[0].value for row in ws[s] if row[0].value is not None]
-            if len(column_data) == 10:
-                quantities.append(10)
-            else:
-                quantities.append(len(column_data))
-
 def read_excel_veh(excel_path, num_veh_classes
                ) -> type(np.array) and type(np.array) and list: #type: ignore
     """Función que obtiene los conteos por giros de todos los vehículos para todos los sentidos."""
@@ -164,13 +139,13 @@ def sheets_duplicated(directory) -> None:
     logger_path = os.path.join(vehicle_path, "LOGS")
     if not os.path.exists(logger_path):
         os.mkdir(logger_path)
-    fh = logging.FileHandler(os.path.join(vehicle_path, "LOGS", "sheets.log"))
+    fh = logging.FileHandler(os.path.join(vehicle_path, "LOGS", "sheets_cars.log"))
     fh.setFormatter(f)
     LOGGER.addHandler(fh)
 
     tipico_files = [file for file in tipico_files if file.endswith(".xlsm") and not file.startswith("~")]
     atipico_files = [file for file in atipico_files if file.endswith(".xlsm") and not file.startswith("~")]
-    summary_excel = os.path.join(vehicle_path, "Summary_duplicates.xlsx")
+    summary_excel = os.path.join(vehicle_path, "Summary_sheets_cars.xlsx")
     wb = Workbook()
     wb.save(summary_excel)
     wb.close()
@@ -192,24 +167,23 @@ def sheets_duplicated(directory) -> None:
         route_excel = os.path.join(vehicle_path, "Tipico", excel)
         try:
             EXCEL = read_excel_veh(route_excel, 11)
+            current_count = find_duplicate_by_sheets(EXCEL, ws, accum_count, excel)
+            accum_count = current_count
         except Exception as e:
             print(f"Error en este excel:\n{excel}")
             LOGGER.error(f"Error en este excel:\n{excel}")
-            raise e
-        current_count = find_duplicate_by_sheets(EXCEL, ws, accum_count, excel)
-        accum_count = current_count
+        
     print("############### ATIPICO ###################")
     for i, excel in enumerate(atipico_files):
         print(f"Analizando Excel ({i+1}/{len(atipico_files)})")
         route_excel = os.path.join(vehicle_path, "Atipico", excel)
         try:
             EXCEL = read_excel_veh(route_excel, 11)
+            current_count = find_duplicate_by_sheets(EXCEL, ws, accum_count, excel)
+            accum_count = current_count
         except Exception as e:
             print(f"Error en este excel:\n{excel}")
             LOGGER.error(f"Error en este excel:\n{excel}")
-            raise e
-        current_count = find_duplicate_by_sheets(EXCEL, ws, accum_count, excel)
-        accum_count = current_count
 
     LOGGER.info(f"Se han encontrado {accum_count} coincidencias")
         
