@@ -159,11 +159,16 @@ def peatonal(entregable_path):
             
             wb.save(final_route)
             _, nombre_archivo = os.path.split(ruta_destino)
-            patron = r"([A-Z]+[0-9]+)"
-            coincidencia = re.search(patron, nombre_archivo)
+            patron1 = r"([A-Z]+[0-9]+)"
+            patron2 = r"([A-Z]+-[0-9]+)"
+            coincidencia1 = re.search(patron1, nombre_archivo)
+            coincidencia2 = re.search(patron2, nombre_archivo)
 
-            if coincidencia:
-                codigo = coincidencia.group(1)
+            if coincidencia1:
+                codigo = coincidencia1.group(1)
+                codigo = codigo[:2]+'-'+codigo[2:]
+            elif coincidencia2:
+                codigo = coincidencia2.group(1)
             else:
                 print(f"El archivo de excel no posee Código de intersección:\n{nombre_archivo}")
                 codigo = "ERROR"
