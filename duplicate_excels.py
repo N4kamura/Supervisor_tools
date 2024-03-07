@@ -256,70 +256,113 @@ def excels_duplicated_excels_veh(directory):
     ws.cell(row=1, column=5, value="Excel Tipico")
     ws.cell(row=1, column=6, value="Excel Atipico")
 
-    pattern = r"([A-Z]+[0-9]+)"
+    pattern1 = r"([A-Z]+[0-9]+)"
+    pattern2 = r"([A-Z]+-[0-9]+)"
+
     accum_count = 0
     print("###### STARTING EXCEL COMPARISONS ######")
-    for i, tipico in enumerate(tipico_files):
-        print(f"Analizando excel ({i+1}/{len(tipico_files)})")
-        coincidense_t = re.search(pattern, tipico)
+    for i, tipico in tqdm(enumerate(tipico_files), desc="Procesando Tipico vs Atipico"):
+        coincidense_t = re.search(pattern1, tipico)
+        coincidense_t2 = re.search(pattern2, tipico)
         if coincidense_t:
             codigo_t = coincidense_t.group(1)
-            for atipico in atipico_files:
-                coincidense_a = re.search(pattern, atipico)
-                if coincidense_a:
-                    codigo_a = coincidense_a.group(1)
+            codigo_t = codigo_t[:2] +'-' + codigo_t[2:]
+        elif coincidense_t2:
+            codigo_t = coincidense_t2.group(1)
+        else:
+            print(f"Para este excel no existe código: {tipico}")
+            continue
+        for atipico in atipico_files:
+            coincidense_a = re.search(pattern1, atipico)
+            coincidense_a2 = re.search(pattern2, atipico)
+            if coincidense_a:
+                codigo_a = coincidense_a.group(1)
+                codigo_a = codigo_a[:2]+'-'+codigo_a[2:]
+            elif coincidense_a2:
+                codigo_a = coincidense_a2.group(1)
+            else:
+                print(f"Para el siguiente excel no existe código: {atipico}")
+                continue
+            route_tipico = os.path.join(vehicle_path,"Tipico", tipico)
+            route_atipico = os.path.join(vehicle_path,"Atipico", atipico)
 
-                    route_tipico = os.path.join(vehicle_path,"Tipico", tipico)
-                    route_atipico = os.path.join(vehicle_path,"Atipico", atipico)
+            EXCEL_TIPICO = read_excel_veh(route_tipico, 11)
+            EXCEL_ATIPICO = read_excel_veh(route_atipico, 11)
 
-                    EXCEL_TIPICO = read_excel_veh(route_tipico, 11)
-                    EXCEL_ATIPICO = read_excel_veh(route_atipico, 11)
+            current_count = find_duplicate_excels(EXCEL_TIPICO, EXCEL_ATIPICO, ws, accum_count, codigo_t, codigo_a)
+            accum_count = current_count
 
-                    current_count = find_duplicate_excels(EXCEL_TIPICO, EXCEL_ATIPICO, ws, accum_count, codigo_t, codigo_a)
-                    accum_count = current_count
+    wb.save(summary_comparison)
+    wb.close()
+    wb = load_workbook(summary_comparison)
+    ws = wb['Sheet']
 
-                else: print(f"Para el siguiente excel no existe código: {atipico}")
-        else: print(f"Para el siguiente excel no existe código: {tipico}")
-
-    for i, tipico1 in enumerate(tipico_files):
-        print(f"Analizando excel ({i+1}/{len(tipico_files)})")
-        coincidense_t1 = re.search(pattern, tipico1)
+    for i, tipico1 in tqdm(enumerate(tipico_files), desc="Procesando Tipico vs Tipico"):
+        coincidense_t1 = re.search(pattern1, tipico1)
+        coincidense_t1_2 = re.search(pattern2, tipico1)
         if coincidense_t1:
             codigo_t1 = coincidense_t1.group(1)
-            for tipico2 in tipico_files:
-                coincidense_t2 = re.search(pattern, tipico2)
-                if coincidense_t2:
-                    codigo_t2 = coincidense_t2.group(1)
+            codigo_t1 = codigo_t1[:2]+'-'+codigo_t1[2:]
+        elif coincidense_t1_2:
+            codigo_t1 = coincidense_t1_2.group(1)
+        else:
+            print(f"Para este no existe código {tipico1}")
+            continue
+        for tipico2 in tipico_files:
+            coincidense_t2 = re.search(pattern1, tipico2)
+            coincidense_t2_2 = re.search(pattern2, tipico2)
+            if coincidense_t2:
+                codigo_t2 = coincidense_t2.group(1)
+                codigo_t2 = codigo_t2[:2]+'-'+codigo_t2[2:]
+            elif coincidense_t2_2:
+                codigo_t2 = coincidense_t2_2.group(1)
+            else:
+                print(f"Para el siguiente excel no existe código: {tipico2}")
+                continue
 
-                    route_tipico1 = os.path.join(vehicle_path, "Tipico", tipico1)
-                    route_tipico2 = os.path.join(vehicle_path, "Tipico", tipico2)
-                    
-                    EXCEL_TIPICO1 = read_excel_veh(route_tipico1, 11) #<---- Se puede cambiar el número de tipos de vehiculares a comparar
-                    EXCEL_TIPICO2 = read_excel_veh(route_tipico2, 11) #<---- Se puede cambiar el número de tipos de vehiculares a comparar
+            route_tipico1 = os.path.join(vehicle_path, "Tipico", tipico1)
+            route_tipico2 = os.path.join(vehicle_path, "Tipico", tipico2)
+            
+            EXCEL_TIPICO1 = read_excel_veh(route_tipico1, 11) #<---- Se puede cambiar el número de tipos de vehiculares a comparar
+            EXCEL_TIPICO2 = read_excel_veh(route_tipico2, 11) #<---- Se puede cambiar el número de tipos de vehiculares a comparar
 
-                    current_count = find_duplicate_excels(EXCEL_TIPICO1, EXCEL_TIPICO2, ws, accum_count, codigo_t1, codigo_t2)
-                else: print(f"Para el siguiente excel no existe código: {tipico2}")
-        else: print(f"Para el siguiente excel no existe código: {tipico1}")
+            current_count = find_duplicate_excels(EXCEL_TIPICO1, EXCEL_TIPICO2, ws, accum_count, codigo_t1, codigo_t2)
+
+    wb.save(summary_comparison)
+    wb.close()
+    wb = load_workbook(summary_comparison)
+    ws = wb['Sheet']
 
     for i, atipico1 in enumerate(atipico_files):
         print(f"Analizando excel ({i+1}/{len(atipico_files)})")
-        coincidense_a1 = re.search(pattern, atipico1)
+        coincidense_a1 = re.search(pattern1, atipico1)
+        coincidense_a1_2 = re.search(pattern2, atipico1)
         if coincidense_a1:
             codigo_a1 = coincidense_a1.group(1)
-            for atipico2 in atipico_files:
-                coincidense_a2 = re.search(pattern, atipico2)
-                if coincidense_a2:
-                    codigo_a2 = coincidense_a2.group(1)
+            codigo_a1 = codigo_a1[:2]+'-'+codigo_a1[2:]
+        elif coincidense_a1_2:
+            codigo_a1 = coincidense_a1_2.group(1)
+        else:
+            print(f"Para el siguiente excel no existe código: {atipico1}")
+            continue
+        for atipico2 in atipico_files:
+            coincidense_a2 = re.search(pattern1, atipico2)
+            coincidense_a2_2 = re.search(pattern2, atipico2)
+            if coincidense_a2:
+                codigo_a2 = coincidense_a2.group(1)
+                codigo_a2 = codigo_a2[:2]+'-'+codigo_a2[2:]
+            elif coincidense_a2_2:
+                codigo_a2 = coincidense_a2_2.group(1)
+            else: 
+                print(f"Para el siguiente excel no existe código: {atipico2}")
+                continue
+            route_atipico1 = os.path.join(vehicle_path, "Atipico", atipico1)
+            route_atipico2 = os.path.join(vehicle_path, "Atipíco", atipico2)
 
-                    route_atipico1 = os.path.join(vehicle_path, "Atipico", atipico1)
-                    route_atipico2 = os.path.join(vehicle_path, "Atipíco", atipico2)
+            EXCEL_ATIPICO1 = read_excel_veh(route_atipico1, 11) #<---- Se puede cambiar el número de tipos de vehiculares a comparar
+            EXCEL_ATIPICO2 = read_excel_veh(route_atipico2, 11) #<---- Se puede cambiar el número de tipos de vehiculares a comparar
 
-                    EXCEL_ATIPICO1 = read_excel_veh(route_atipico1, 11) #<---- Se puede cambiar el número de tipos de vehiculares a comparar
-                    EXCEL_ATIPICO2 = read_excel_veh(route_atipico2, 11) #<---- Se puede cambiar el número de tipos de vehiculares a comparar
-
-                    current_count = find_duplicate_excels(EXCEL_ATIPICO1, EXCEL_ATIPICO2, ws, accum_count, codigo_a1, codigo_a2)
-                else: print(f"Para el siguiente excel no existe código: {atipico2}")
-        else: print(f"Para el siguiente excel no existe código: {atipico1}")
+            current_count = find_duplicate_excels(EXCEL_ATIPICO1, EXCEL_ATIPICO2, ws, accum_count, codigo_a1, codigo_a2)
 
     wb.save(summary_comparison)
     wb.close()
@@ -417,6 +460,7 @@ def excels_duplicated_excels_ped(directory):
             codigo_t_1 = coincidense_t2_1.group(1)
         else:
             LOGGER.error(f"Para el siguiente excel no existe código: {tipico}")
+            continue
 
         for tipico2 in tipico_files:
             coincidense_t_2 = re.search(pattern, tipico2)
@@ -427,6 +471,7 @@ def excels_duplicated_excels_ped(directory):
                 codigo_t_2 = coincidense_t2_2.group(1)
             else:
                 LOGGER.error(f"Para el siguiente excel no existe código: {tipico2}")
+                continue
 
             route_tipico1 = os.path.join(pedestrian_path, "Tipico", tipico)
             route_tipico2 = os.path.join(pedestrian_path, "Tipico", tipico2)
@@ -447,6 +492,7 @@ def excels_duplicated_excels_ped(directory):
 
             current_count = find_duplicate_excels(EXCEL_TIPICO_1, EXCEL_TIPICO_2, ws, accum_count, codigo_t_1, codigo_t_2)
             accum_count = current_count
+            
     end_time = time.time()
     excel_time = end_time-start_time
     LOGGER.info(f"Time: {excel_time:.2f}")
