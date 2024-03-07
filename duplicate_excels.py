@@ -401,6 +401,12 @@ def excels_duplicated_excels_ped(directory):
     excel_time = end_time-start_time
     LOGGER.info(f"Time: {excel_time:.2f}")
 
+    wb.save(summary_comparison)
+    wb.close()
+
+    wb = load_workbook(summary_comparison)
+    ws = wb['Sheet']
+
     start_time = time.time()
     for tipico in tqdm(tipico_files, desc="Procesando Típico vs Típico"):
         coincidense_t_1 = re.search(pattern, tipico)
@@ -445,10 +451,16 @@ def excels_duplicated_excels_ped(directory):
     excel_time = end_time-start_time
     LOGGER.info(f"Time: {excel_time:.2f}")
 
+    wb.save(summary_comparison)
+    wb.close()
+
+    wb = load_workbook(summary_comparison)
+    ws = wb['Sheet']
+
     start_time = time.time()
     for atipico in tqdm(atipico_files, desc="Procesando Atípico vs Atípico"):
         coincidense_a_1 = re.search(pattern, atipico)
-        coincidense_a2_1 = re.search(pattern, atipico)
+        coincidense_a2_1 = re.search(pattern2, atipico)
         if coincidense_a_1:
             codigo_a_1 = coincidense_a_1.group(1)
         elif coincidense_a2_1:
