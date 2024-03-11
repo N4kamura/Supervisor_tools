@@ -217,7 +217,7 @@ def find_duplicate_excels(EXCEL_T, EXCEL_A, ws, accum_count, codigo_t, codigo_a)
                             result += str(elem)+', '
                         ws.cell(row=count+2, column=1, value=result[:-2])
                         ws.cell(row=count+2, column=2, value=hojas[i])
-                        ws.cell(row=count+2, column=3, value=hojas[i+1+m])
+                        ws.cell(row=count+2, column=3, value=hojas[m])
                         ws.cell(row=count+2, column=4, value=turno)
                         ws.cell(row=count+2, column=5, value=codigo_t)
                         ws.cell(row=count+2, column=6, value=codigo_a)
