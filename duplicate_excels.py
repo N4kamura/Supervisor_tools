@@ -516,7 +516,7 @@ def excels_duplicated_excels_ped(directory):
 
         for atipico2 in atipico_files:
             coincidense_a_2 = re.search(pattern, atipico2)
-            coincidense_a2_2 = re.search(pattern, atipico2)
+            coincidense_a2_2 = re.search(pattern2, atipico2)
             if coincidense_a_2:
                 codigo_a_2 = coincidense_a_2.group(1)
             if coincidense_a2_2:
